@@ -142,35 +142,6 @@ def grouper(iterable: Iterable, n: int = 100, fillvalue: Any = None) -> Any:
     args = [iter(iterable)] * n
     return zip_discard_compr(*args) 
     
-def oldformater(resultsquery: Dict) -> List:
-    """ DEPRECATED
-    The formater function will return a Prometheus exposition formatted list of strings computed from a dictionary of responses from the GetMetricData api. 
-    TODO: Lots of stuff. I am not happy with accessing list by index [0] for this. 
-    Not sure if GetMetricData will return more than one list item and this will broke this function. Thinking about 
-    using enumerate for the values (As I did for the datapoints/timestamps lists)
-    """
-    formattedresults=[] #type: List
-    for identiy, values in resultsquery.items():
-        body=''
-        if isinstance(values,list):
-            metricname=values[0]['query']['MetricStat']['Metric']['MetricName']
-            namespace=values[0]['query']['MetricStat']['Metric']['Namespace']
-            dimensions=values[0]['query']['MetricStat']['Metric']['Dimensions']
-            if isinstance(dimensions,list) and len(dimensions)>=1:
-                for k in dimensions:
-                    body+=f', {k["Name"]}="{k["Value"]}"'
-            datapoints=values[1]['results']['Values']
-            timestamps=values[1]['results']['Timestamps']
-            headstring = f'{metricname}{{Namespace="{namespace}"' 
-            if isinstance(datapoints,list) and len(datapoints)>=1:
-                # data=str(datapoints[0])
-                for index, (data, time)  in enumerate(zip(datapoints, timestamps)):
-                    endingstring=f'}} {data} {time.timestamp()}'
-                    formattedresults.append(headstring+body+endingstring) 
-            else: 
-                endingstring = f'}} ' 
-                formattedresults.append(headstring+body+endingstring)
-    return formattedresults
     
 def formater(resultsquery: Dict) -> List:
     """

@@ -16,6 +16,7 @@ optional arguments:
   --region REGION       Region to use
   --namespace NAMESPACE
                         Namespace to query
+  --raw RAW             Raw results
 ```
 
 
