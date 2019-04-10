@@ -142,23 +142,12 @@ def grouper(iterable: Iterable, n: int = 100, fillvalue: Any = None) -> Any:
     args = [iter(iterable)] * n
     return zip_discard_compr(*args) 
     
-def formater(resultsquery: Dict) -> List:
-    """The formater function will return a Prometheus exposition formatted list of strings computed from a dictionary of responses from the GetMetricData api. 
-    TODO: Lots of stuff. I am not happy with accessing list by index [0] for this. Not sure if GetMetricData will return more than one list item and this will broke this function. Thinking about 
+def oldformater(resultsquery: Dict) -> List:
+    """ DEPRECATED
+    The formater function will return a Prometheus exposition formatted list of strings computed from a dictionary of responses from the GetMetricData api. 
+    TODO: Lots of stuff. I am not happy with accessing list by index [0] for this. 
+    Not sure if GetMetricData will return more than one list item and this will broke this function. Thinking about 
     using enumerate for the values (As I did for the datapoints/timestamps lists)
-    
-    >>> test=dict()
-    >>> test['lvrqciqeoe']=[{'query': {'MetricStat': {'Metric': {'Namespace': 'AWS/EC2', 'MetricName': 'StatusCheckFailed_System', 'Dimensions': [{'Name': 'InstanceId', 'Value': 'i-0747590f4f554184a'}]}, 'Period': 30, 'Stat': 'Sum'}}}, {'results': {'Id': 'lvrqciqeoe', 'Label': 'StatusCheckFailed_System', 'Timestamps': [datetime(2019, 4, 5, 16, 25), datetime(2019, 4, 5, 16, 24), datetime(2019, 4, 5, 16, 23), datetime(2019, 4, 5, 16, 22)], 'Values': [0.0, 0.0, 0.0, 0.0], 'StatusCode': 'Complete'}}]
-    >>> formater(test)
-    ['StatusCheckFailed_System{Namespace="AWS/EC2", InstanceId="i-0747590f4f554184a"} 0.0 1554481500.0', 'StatusCheckFailed_System{Namespace="AWS/EC2", InstanceId="i-0747590f4f554184a"} 0.0 1554481440.0', 'StatusCheckFailed_System{Namespace="AWS/EC2", InstanceId="i-0747590f4f554184a"} 0.0 1554481380.0', 'StatusCheckFailed_System{Namespace="AWS/EC2", InstanceId="i-0747590f4f554184a"} 0.0 1554481320.0']
-    >>> for i in formater(test): print(i)  
-    ... 
-    StatusCheckFailed_System{Namespace="AWS/EC2", InstanceId="i-0747590f4f554184a"} 0.0 1554481500.0
-    StatusCheckFailed_System{Namespace="AWS/EC2", InstanceId="i-0747590f4f554184a"} 0.0 1554481440.0
-    StatusCheckFailed_System{Namespace="AWS/EC2", InstanceId="i-0747590f4f554184a"} 0.0 1554481380.0
-    StatusCheckFailed_System{Namespace="AWS/EC2", InstanceId="i-0747590f4f554184a"} 0.0 1554481320.0
-    >>> 
-    
     """
     formattedresults=[] #type: List
     for identiy, values in resultsquery.items():
@@ -181,6 +170,49 @@ def formater(resultsquery: Dict) -> List:
             else: 
                 endingstring = f'}} ' 
                 formattedresults.append(headstring+body+endingstring)
+    return formattedresults
+    
+def formater(resultsquery: Dict) -> List:
+    """
+    The formater function will return a Prometheus exposition formatted list of strings computed from a dictionary of responses from the GetMetricData api. 
+    
+    >>> test=dict()
+    >>> test['lvrqciqeoe']=[{'query': {'MetricStat': {'Metric': {'Namespace': 'AWS/EC2', 'MetricName': 'StatusCheckFailed_System', 'Dimensions': [{'Name': 'InstanceId', 'Value': 'i-0747590f4f554184a'}]}, 'Period': 30, 'Stat': 'Sum'}}}, {'results': {'Id': 'lvrqciqeoe', 'Label': 'StatusCheckFailed_System', 'Timestamps': [datetime(2019, 4, 5, 16, 25), datetime(2019, 4, 5, 16, 24), datetime(2019, 4, 5, 16, 23), datetime(2019, 4, 5, 16, 22)], 'Values': [0.0, 0.0, 0.0, 0.0], 'StatusCode': 'Complete'}}]
+    >>> formater(test)
+    ['StatusCheckFailed_System{Namespace="AWS/EC2", InstanceId="i-0747590f4f554184a"} 0.0 1554481500.0', 'StatusCheckFailed_System{Namespace="AWS/EC2", InstanceId="i-0747590f4f554184a"} 0.0 1554481440.0', 'StatusCheckFailed_System{Namespace="AWS/EC2", InstanceId="i-0747590f4f554184a"} 0.0 1554481380.0', 'StatusCheckFailed_System{Namespace="AWS/EC2", InstanceId="i-0747590f4f554184a"} 0.0 1554481320.0']
+    >>> for i in formater(test): print(i)  
+    ... 
+    StatusCheckFailed_System{Namespace="AWS/EC2", InstanceId="i-0747590f4f554184a"} 0.0 1554481500.0
+    StatusCheckFailed_System{Namespace="AWS/EC2", InstanceId="i-0747590f4f554184a"} 0.0 1554481440.0
+    StatusCheckFailed_System{Namespace="AWS/EC2", InstanceId="i-0747590f4f554184a"} 0.0 1554481380.0
+    StatusCheckFailed_System{Namespace="AWS/EC2", InstanceId="i-0747590f4f554184a"} 0.0 1554481320.0
+    """
+
+    formattedresults=[] #type: List
+    for identiy, values in resultsquery.items():
+        body=''
+        if isinstance(values,list):
+            for v in values:
+                if 'query' in v: 
+                    metricname=v['query']['MetricStat']['Metric']['MetricName']
+                    namespace=v['query']['MetricStat']['Metric']['Namespace']
+                    headstring = f'{metricname}{{Namespace="{namespace}"' 
+                    dimensions=v['query']['MetricStat']['Metric']['Dimensions']
+                    if isinstance(dimensions,list) and len(dimensions)>=1:
+                        for k in dimensions:
+                            body+=f', {k["Name"]}="{k["Value"]}"'
+                    
+                if 'results' in v:
+                    datapoints=v['results']['Values']
+                    timestamps=v['results']['Timestamps']
+                    if isinstance(datapoints,list) and len(datapoints)>=1:
+                        for index, (data, time)  in enumerate(zip(datapoints, timestamps)):
+                            endingstring=f'}} {data} {time.timestamp()}'
+                            formattedresults.append(headstring+body+endingstring) 
+                    else: 
+                        endingstring = f'}} ' 
+                        formattedresults.append(headstring+body+endingstring)
+                    
     return formattedresults
             
 if __name__ == "__main__":
