@@ -10,7 +10,7 @@ Resources:
       Description: ''
       MemorySize: 128
       Timeout: 15
-      CodeUri: cw2prometheus/
+      CodeUri: .build/
       Policies:
       - CloudWatchReadOnlyAccess
       - AWSLambdaExecute
