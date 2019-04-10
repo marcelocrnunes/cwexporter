@@ -1,6 +1,24 @@
 # cwexporter
 An API to export Cloudwatch Metrics to Prometheus exposition format
 
+## Console
+
+You can test the exporter using the "console" tool:
+
+```
+python3 src/console.py -h
+usage: console.py [-h] [--region REGION] [--namespace NAMESPACE]
+
+Region and Namespace
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --region REGION       Region to use
+  --namespace NAMESPACE
+                        Namespace to query
+```
+
+
 ## to create lambda package: 
 To use the recent version of boto3 we need to package it before deploying the lambda function:
 
