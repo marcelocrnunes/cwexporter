@@ -40,7 +40,7 @@ if 'LAMBDA_TASK_ROOT' in os.environ:
     print("LAMBDA_TASK_ROOT env var:"+os.environ["LAMBDA_TASK_ROOT"])
     print("sys.path:"+str(sys.path))
  
-    sys.path.insert(0,envLambdaTaskRoot+"/cw2prometheus")
+    sys.path.insert(0,envLambdaTaskRoot)
 
 
 import string 
