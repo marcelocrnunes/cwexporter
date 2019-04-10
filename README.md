@@ -24,7 +24,7 @@ To use the recent version of boto3 we need to package it before deploying the la
 
 ```
 mkdir .build
-cp src/* . build/
+cp src/* .build/
 pip-3.6 install -r requirements.txt -t .build/
 ```
 
