@@ -1,5 +1,5 @@
 # cwexporter
-An API to export Cloudwatch Metrics to Prometheus exposition format
+A POC API to export Cloudwatch Metrics to Prometheus exposition format. 
 
 ## Console
 
